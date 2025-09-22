@@ -1,7 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
-import Home from './pages/home'
-import Login from './pages/login'
+import Home from './pages/Home.jsx'
+import Login from './pages/Login.jsx'
 import EmailVerify from './pages/EmailVerify'
 import ResetPass from './pages/ResetPass'
 import {ToastContainer} from 'react-toastify';

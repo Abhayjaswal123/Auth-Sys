@@ -18,13 +18,14 @@ export const AppContextProvider =  (props) => {
             if(data.success){
                 setIsLoggedIn(true);
                 getUserData();
+            
             }else {
             setIsLoggedIn(false);
             setUserData(null);
         }
         }
         catch(err){
-                    setIsLoggedIn(false);
+        setIsLoggedIn(false);
         setUserData(null);
         // Don't show error toast for auth check failures
         console.log("Authentication check failed:", err.message);
