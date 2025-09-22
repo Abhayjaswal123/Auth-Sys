@@ -28,8 +28,8 @@ export const register = async (req, res) => {
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
         res.cookie('token', token, { httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          sameSite: 'None',
+secure: true ,
             maxAge: 1 * 60 * 60 *1000 // 1 hour
          });
 //sending welcome email
@@ -74,8 +74,8 @@ export const login = async (req, res) => {
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
         res.cookie('token', token, { httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+             sameSite: 'None',
+secure: true ,
             maxAge: 1 * 60 * 60 *1000 // 1 hour
          });
 
