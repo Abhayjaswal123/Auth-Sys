@@ -70,7 +70,7 @@ const Navbar = () => {
 
       {userData ?
        <div ref={dropdownRef} className='w-8 h-8 flex justify-center items-center
-        rounded-full bg-black text-white relative group'
+        rounded-full bg-black text-white relative group cursor-pointer'
         onClick={() => setShowDropdown(!showDropdown)}>
 
       
