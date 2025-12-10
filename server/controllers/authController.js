@@ -27,11 +27,15 @@ export const register = async (req, res) => {
         const token = Jwt.sign({id : user._id}, 
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
-        res.cookie('token', token, { httpOnly: true,
-          sameSite: 'None',
-secure: true ,
-            maxAge: 1 * 60 * 60 *1000 // 1 hour
-         });
+       const isProd = process.env.NODE_ENV === 'production';
+
+res.cookie('token', token, {
+  httpOnly: true,
+  secure: isProd, // true in production (HTTPS), false for local dev (HTTP)
+  sameSite: isProd ? 'None' : 'Lax', // None required for cross-site in prod; Lax is fine for dev
+  maxAge: 1 * 60 * 60 * 1000,
+  path: '/'
+});
 //sending welcome email
          const mailOptions = {
             from: process.env.SENDER_EMAIL,
@@ -73,11 +77,15 @@ export const login = async (req, res) => {
          const token = Jwt.sign({id : user._id}, 
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
-        res.cookie('token', token, { httpOnly: true,
-             sameSite: 'None',
-secure: true ,
-            maxAge: 1 * 60 * 60 *1000 // 1 hour
-         });
+       const isProd = process.env.NODE_ENV === 'production';
+
+res.cookie('token', token, {
+  httpOnly: true,
+  secure: isProd, // true in production (HTTPS), false for local dev (HTTP)
+  sameSite: isProd ? 'None' : 'Lax', // None required for cross-site in prod; Lax is fine for dev
+  maxAge: 1 * 60 * 60 * 1000,
+  path: '/'
+});
 
          return res.json({ success: true });
 
