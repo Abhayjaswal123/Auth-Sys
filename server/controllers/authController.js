@@ -174,9 +174,21 @@ export const verifyEmail = async (req, res) => {
 // verify user authentication status
 export const isAuthenticated = async (req, res) => {
     try {
-        return res.json({ success: true, message: "User is authenticated" });
+        const { token } = req.cookies;
+        
+        if (!token) {
+            return res.json({ success: false, message: "No token" });
+        }
+
+        const tokenDecoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        if (tokenDecoded.id) {
+            return res.json({ success: true, message: "User is authenticated" });
+        } else {
+            return res.json({ success: false, message: "Invalid token" });
+        }
     } catch (error) {
-        return res.json({ success: false, message: error.message });
+        return res.json({ success: false, message: "Token validation failed" });
     }
 }
 
