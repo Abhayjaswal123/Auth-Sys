@@ -27,13 +27,16 @@ export const register = async (req, res) => {
         const token = Jwt.sign({id : user._id}, 
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
-       const isProd = process.env.NODE_ENV === 'production';
+       // Detect production environment (Render always uses HTTPS)
+       // If PORT is set by Render, we're in production
+       const isProduction = process.env.NODE_ENV === 'production' || 
+                           (process.env.PORT && process.env.PORT !== '3000');
 
 res.cookie('token', token, {
   httpOnly: true,
-  secure: isProd, // true in production (HTTPS), false for local dev (HTTP)
-  sameSite: isProd ? 'None' : 'Lax', // None required for cross-site in prod; Lax is fine for dev
-  maxAge: 1 * 60 * 60 * 1000,
+  secure: isProduction, // true in production (HTTPS), false for local dev (HTTP)
+  sameSite: isProduction ? 'None' : 'Lax', // None required for cross-origin in prod
+  maxAge: 1 * 60 * 60 * 1000, // 1 hour
   path: '/'
 });
 //sending welcome email
@@ -77,13 +80,16 @@ export const login = async (req, res) => {
          const token = Jwt.sign({id : user._id}, 
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
-       const isProd = process.env.NODE_ENV === 'production';
+       // Detect production environment (Render always uses HTTPS)
+       // If PORT is set by Render, we're in production
+       const isProduction = process.env.NODE_ENV === 'production' || 
+                           (process.env.PORT && process.env.PORT !== '3000');
 
 res.cookie('token', token, {
   httpOnly: true,
-  secure: isProd, // true in production (HTTPS), false for local dev (HTTP)
-  sameSite: isProd ? 'None' : 'Lax', // None required for cross-site in prod; Lax is fine for dev
-  maxAge: 1 * 60 * 60 * 1000,
+  secure: isProduction, // true in production (HTTPS), false for local dev (HTTP)
+  sameSite: isProduction ? 'None' : 'Lax', // None required for cross-origin in prod
+  maxAge: 1 * 60 * 60 * 1000, // 1 hour
   path: '/'
 });
 
@@ -98,10 +104,14 @@ res.cookie('token', token, {
 // Logout user
 export const logout = (req, res) => {
     try {
+        const isProduction = process.env.NODE_ENV === 'production' || 
+                            (process.env.PORT && process.env.PORT !== '3000');
+        
         res.clearCookie('token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            path: '/'
         })
 
         return res.json({ success: true, message: "Logged Out" });
