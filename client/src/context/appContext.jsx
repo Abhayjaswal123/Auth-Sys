@@ -9,7 +9,7 @@ export const AppContextProvider =  (props) => {
      axios.defaults.withCredentials = true;
 
     // Normalize backend URL to ensure it has protocol and default to localhost
-    const rawBackend = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    const rawBackend = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000').trim();
     const backend_url = rawBackend.startsWith('http://') || rawBackend.startsWith('https://')
       ? rawBackend
       : `http://localhost:${rawBackend}`;
