@@ -4,6 +4,17 @@ import userModel from '../models/usermodel.js';
 import transporter from '../config/nodemailer.js';
 import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE} from '../config/emailTemplate.js';
 
+// Helper function to detect if we're in production (Render always uses HTTPS)
+const isProduction = () => {
+    // Explicit production mode
+    if (process.env.NODE_ENV === 'production') return true;
+    // Render sets RENDER=true
+    if (process.env.RENDER === 'true') return true;
+    // If PORT is set (Render always sets this) and we're not explicitly in development
+    if (process.env.PORT && process.env.NODE_ENV !== 'development') return true;
+    return false;
+};
+
 // Register user
 export const register = async (req, res) => {
     const { name, email, password } = req.body;
@@ -27,15 +38,12 @@ export const register = async (req, res) => {
         const token = Jwt.sign({id : user._id}, 
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
-       // Detect production environment (Render always uses HTTPS)
-       // If PORT is set by Render, we're in production
-       const isProduction = process.env.NODE_ENV === 'production' || 
-                           (process.env.PORT && process.env.PORT !== '3000');
+       const prod = isProduction();
 
 res.cookie('token', token, {
   httpOnly: true,
-  secure: isProduction, // true in production (HTTPS), false for local dev (HTTP)
-  sameSite: isProduction ? 'None' : 'Lax', // None required for cross-origin in prod
+  secure: prod, // true in production (HTTPS), false for local dev (HTTP)
+  sameSite: prod ? 'None' : 'Lax', // None required for cross-origin in prod
   maxAge: 1 * 60 * 60 * 1000, // 1 hour
   path: '/'
 });
@@ -80,15 +88,12 @@ export const login = async (req, res) => {
          const token = Jwt.sign({id : user._id}, 
             process.env.JWT_SECRET, {expiresIn: '1h'});
 
-       // Detect production environment (Render always uses HTTPS)
-       // If PORT is set by Render, we're in production
-       const isProduction = process.env.NODE_ENV === 'production' || 
-                           (process.env.PORT && process.env.PORT !== '3000');
+       const prod = isProduction();
 
 res.cookie('token', token, {
   httpOnly: true,
-  secure: isProduction, // true in production (HTTPS), false for local dev (HTTP)
-  sameSite: isProduction ? 'None' : 'Lax', // None required for cross-origin in prod
+  secure: prod, // true in production (HTTPS), false for local dev (HTTP)
+  sameSite: prod ? 'None' : 'Lax', // None required for cross-origin in prod
   maxAge: 1 * 60 * 60 * 1000, // 1 hour
   path: '/'
 });
@@ -104,13 +109,12 @@ res.cookie('token', token, {
 // Logout user
 export const logout = (req, res) => {
     try {
-        const isProduction = process.env.NODE_ENV === 'production' || 
-                            (process.env.PORT && process.env.PORT !== '3000');
+        const prod = isProduction();
         
         res.clearCookie('token', {
             httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'None' : 'Lax',
+            secure: prod,
+            sameSite: prod ? 'None' : 'Lax',
             path: '/'
         })
 

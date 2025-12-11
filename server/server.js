@@ -68,7 +68,20 @@ app.use(cors({
 
 //API end points
 app.get('/', (req, res) => {
-res.send(' Working!');
+res.json({ 
+    message: 'Server is working!',
+    status: 'ok',
+    timestamp: new Date().toISOString()
+});
+});
+
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Debug endpoint to check cookies
@@ -78,14 +91,37 @@ app.get('/api/debug/cookies', (req, res) => {
     cookieHeader: req.headers.cookie,
     origin: req.headers.origin,
     referer: req.headers.referer,
-    'user-agent': req.headers['user-agent']
+    'user-agent': req.headers['user-agent'],
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      RENDER: process.env.RENDER,
+      PORT: process.env.PORT
+    }
   });
 });
 
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  if (err.message.includes('CORS')) {
+    return res.status(403).json({ 
+      success: false, 
+      message: err.message,
+      hint: 'Make sure your frontend URL is in ALLOWED_ORIGINS environment variable'
+    });
+  }
+  res.status(500).json({ 
+    success: false, 
+    message: err.message || 'Internal server error' 
+  });
+});
+
 //Server running
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
 console.log(`Server is running on port ${PORT}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Render: ${process.env.RENDER || 'false'}`);
 });
