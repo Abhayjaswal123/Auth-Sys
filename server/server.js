@@ -11,7 +11,19 @@ const app = express();
 const PORT = process.env.PORT || 3000
 connectDB();
 
-const allowedOrigins = ["https://auth-sys-frontend-261e.onrender.com"];
+// Configure allowed origins (frontend URLs) via env, with sensible defaults
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+if (allowedOrigins.length === 0) {
+  allowedOrigins.push(
+    'https://auth-sys-frontend-261e.onrender.com',
+    'http://localhost:5173', // Vite default
+    'http://127.0.0.1:5173'
+  );
+}
+
 //Middlewares
 app.use(express.json());
 app.use(cookieParser());

@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import  Jwt  from 'jsonwebtoken';
+import Jwt from 'jsonwebtoken';
 import userModel from '../models/usermodel.js';
 import transporter from '../config/nodemailer.js';
 import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE} from '../config/emailTemplate.js';
@@ -126,7 +126,7 @@ export const sendVerifyOtp = async (req, res) => {
         }
        const otp = String(Math.floor(100000 + Math.random() * 900000));
        user.verifyOtp = otp;
-       user.verifyOtpExpiry = Date.now() + 20 * 60 * 1000; // 20 minutes
+       user.isVerifiedOtpExpire = Date.now() + 20 * 60 * 1000; // 20 minutes
        await user.save();
 
        const mailOptions = {
@@ -134,7 +134,9 @@ export const sendVerifyOtp = async (req, res) => {
         to: user.email,
         subject: 'Your Account Verification OTP',
         //text: `Hello ${user.name},\n\nYour OTP for account verification is: ${otp}\nThis OTP is valid for 20 minutes.\n\nBest regards,\nThe Team`,
-        html : EMAIL_VERIFY_TEMPLATE.replace("{{otp}}",otp).replace("{{email}},user.email")
+        html : EMAIL_VERIFY_TEMPLATE
+          .replace("{{otp}}", otp)
+          .replace("{{email}}", user.email)
     }
     await transporter.sendMail(mailOptions);
 
@@ -164,7 +166,7 @@ export const verifyEmail = async (req, res) => {
             return res.json({ success: false, message: "Invalid OTP" });
     }
 
-    if (user.verifyOtpExpiry < Date.now()) {
+    if (user.isVerifiedOtpExpire < Date.now()) {
         return res.json({ success: false, message: "OTP has expired" });
     }
 
@@ -188,7 +190,7 @@ export const isAuthenticated = async (req, res) => {
             return res.json({ success: false, message: "No token" });
         }
 
-        const tokenDecoded = jwt.verify(token, process.env.JWT_SECRET);
+        const tokenDecoded = Jwt.verify(token, process.env.JWT_SECRET);
         
         if (tokenDecoded.id) {
             return res.json({ success: true, message: "User is authenticated" });
@@ -227,7 +229,9 @@ export const sendResetPasswordOtp = async (req, res) => {
         to: user.email,
         subject: 'Your Account Verification OTP',
         // text: `your OTP for password reset is: ${otp}\nThis OTP is valid for 20 minutes.\n\nBest regards,\nThe Team`,
-        html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}",otp).replace("{{email}},user.email")
+        html: PASSWORD_RESET_TEMPLATE
+          .replace("{{otp}}", otp)
+          .replace("{{email}}", user.email)
     };
 
     await transporter.sendMail(mailOptions);
