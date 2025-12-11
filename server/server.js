@@ -40,31 +40,33 @@ console.log('Allowed CORS origins:', allowedOrigins);
 //Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-     origin: function(origin, callback) {
-    // allow tools like Postman (no origin) and allowed browser origins
+
+// CORS configuration - must be before routes
+const corsOptions = {
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps, Postman, curl)
     if (!origin) {
-      console.log('CORS: Request with no origin (likely Postman/curl)');
       return callback(null, true);
     }
     
-    console.log('CORS: Checking origin:', origin);
-    
+    // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
-      console.log('CORS: Origin allowed');
-      return callback(null, true);
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
+      callback(new Error(`CORS: Origin ${origin} is not allowed. Add it to ALLOWED_ORIGINS environment variable.`));
     }
-    
-    // Log the origin for debugging (always log for troubleshooting)
-    console.log('CORS blocked origin:', origin);
-    console.log('Allowed origins:', allowedOrigins);
-    return callback(new Error(`CORS: Origin ${origin} is not allowed. Add it to ALLOWED_ORIGINS environment variable.`));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Set-Cookie']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Set-Cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 
 //API end points
 app.get('/', (req, res) => {
@@ -103,16 +105,27 @@ app.get('/api/debug/cookies', (req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 
-// Error handling middleware
+// Error handling middleware - must be after routes
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
+  
+  // Handle CORS errors - but don't interfere with preflight requests
   if (err.message.includes('CORS')) {
+    // For preflight OPTIONS requests, send proper CORS error response
+    if (req.method === 'OPTIONS') {
+      return res.status(403).json({ 
+        success: false, 
+        message: err.message,
+        hint: 'Make sure your frontend URL is in ALLOWED_ORIGINS environment variable'
+      });
+    }
     return res.status(403).json({ 
       success: false, 
       message: err.message,
       hint: 'Make sure your frontend URL is in ALLOWED_ORIGINS environment variable'
     });
   }
+  
   res.status(500).json({ 
     success: false, 
     message: err.message || 'Internal server error' 
