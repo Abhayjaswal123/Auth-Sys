@@ -66,7 +66,13 @@ const Navbar = () => {
 
   return (
     <div className='w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0'>
-      <img src={assets.logo} alt="" className='w-28 sm:w-32'/>
+      <button 
+        onClick={() => navigate('/')} 
+        className='p-2 -m-2 cursor-pointer select-none active:opacity-70'
+        style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+        aria-label="Go to home">
+        <img src={assets.logo} alt="Logo" className='w-28 sm:w-32 pointer-events-none' />
+      </button>
 
       {userData ?
        <div ref={dropdownRef} className='w-8 h-8 flex justify-center items-center

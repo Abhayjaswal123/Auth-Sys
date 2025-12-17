@@ -84,8 +84,13 @@ const ResetPass = () => {
   return (
     <div className='flex items-center justify-center min-h-screen 
      bg-gradient-to-br from-blue-200 to-purple-400'>
-       <img onClick={()=>navigate('/')} src={assets.logo} alt="" className='absolute left-5 sm:left-20
-                  top-5 w-28 sm:w-32 cursor-ponter' />
+       <button 
+         onClick={()=>navigate('/')} 
+         className='absolute left-5 sm:left-20 top-5 z-50 p-2 -m-2 cursor-pointer select-none active:opacity-70'
+         style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+         aria-label="Go to home">
+         <img src={assets.logo} alt="Logo" className='w-28 sm:w-32 pointer-events-none' />
+       </button>
   {/* enter emial id */}
 
   {!isEmailSent && 
